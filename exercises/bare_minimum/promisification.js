@@ -3,10 +3,11 @@
  * Promisify them if you can, otherwise roll your own promise returning function
  */ 
 
-var fs = require('fs');
+// var fs = require('fs');
 var request = require('request');
 var crypto = require('crypto');
 var Promise = require('bluebird');
+var fs = Promise.promisifyAll(require('fs'));
 
 // (1) Asyncronous HTTP request
 var getGitHubProfile = function(user, callback) {
@@ -43,27 +44,19 @@ var generateRandomTokenAsync = Promise.promisify(generateRandomToken); // TODO
 
 // (3) Asyncronous file manipulation
 var readFileAndMakeItFunny = function(filePath, callback) {
-  // fs.readFile(filePath, 'utf8', function(err, file) {
-  //   if (err) { return callback(err); }
+  fs.readFile(filePath, 'utf8', function(err, file) {
+    if (err) { return callback(err); }
    
-  //   var funnyFile = file.split('\n')
-  //     .map(function(line) {
-  //       return line + ' lol';
-  //     })
-  //     .join('\n');
-
-  //   callback(funnyFile);
-  // });
-  var readFileAsync = Promise.promisify(fs.readFile);
-  readFileAsync(filePath, 'utf8').then((contents) => {
-    return contents.split('\n')
+    var funnyFile = file.split('\n')
       .map(function(line) {
         return line + ' lol';
       })
       .join('\n');
-  }).then();
-};
 
+    callback(funnyFile);
+  });
+};
+var readFilePromisify = Promise.promisify(fs.readFile);
 var readFileAndMakeItFunnyAsync = Promise.promisify(readFileAndMakeItFunny); // TODO
 
 // Export these functions so we can test them and reuse them in later exercises
